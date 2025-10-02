@@ -17,8 +17,8 @@ module.exports = {
     // Database Configuration
     MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/whatsapp-api',
     MONGODB_OPTIONS: {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+        // useNewUrlParser and useUnifiedTopology are deprecated in MongoDB driver v4+
+        // They are no longer needed and have no effect
     },
 
     // Redis Configuration (for Bull queue)
