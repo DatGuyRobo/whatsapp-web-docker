@@ -9,13 +9,22 @@ services:
       - "${PORT:-3000}:3000"
     volumes:
       - ./sessions:/app/sessions
+      - ./logs:/app/logs
     environment:
       - PORT=3000
       - API_KEY=${API_KEY}
       - WEBHOOK_URL=${WEBHOOK_URL}
       - SESSION_PATH=/app/sessions
+      - MONGODB_URI=mongodb://mongodb:27017/whatsapp-api
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ALWAYS_ONLINE=${ALWAYS_ONLINE:-true}
+      - LOG_DIR=/app/logs
     env_file:
       - .env
+    depends_on:
+      - mongodb
+      - redis
     security_opt:
       - seccomp=unconfined
     shm_size: '2gb'
@@ -25,3 +34,40 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - whatsapp-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: whatsapp-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=whatsapp-api
+    networks:
+      - whatsapp-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: whatsapp-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - whatsapp-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  whatsapp-network:
+    driver: bridge

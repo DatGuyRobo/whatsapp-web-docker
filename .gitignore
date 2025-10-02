@@ -51,3 +51,11 @@ logs/
 *.temp
 tmp/
 temp/
+
+# Backup files
+*.backup
+*.bak
+
+# Database dumps
+*.dump
+*.sql
