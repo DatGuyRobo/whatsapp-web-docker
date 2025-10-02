@@ -49,9 +49,11 @@ RUN npm install --omit=dev
 
 # Copy application code
 COPY index.js ./
+COPY config.js ./
+COPY src ./src
 
-# Create sessions directory
-RUN mkdir -p /app/sessions && chmod 777 /app/sessions
+# Create sessions and logs directories
+RUN mkdir -p /app/sessions /app/logs && chmod 777 /app/sessions /app/logs
 
 # Expose port
 EXPOSE 3000
