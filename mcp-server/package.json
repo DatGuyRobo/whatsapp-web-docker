@@ -1,0 +1,38 @@
+{
+  "name": "whatsapp-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for WhatsApp Web API - enables AI assistants to interact with WhatsApp",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "whatsapp-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "start:http": "node index-http.js",
+    "dev": "node --watch index.js",
+    "dev:http": "node --watch index-http.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "whatsapp",
+    "whatsapp-web",
+    "ai",
+    "assistant",
+    "claude"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.19.1",
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "zod": "^3.25.76"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

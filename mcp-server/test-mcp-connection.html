@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MCP Server Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        pre {
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>WhatsApp MCP Server Connection Test</h1>
+
+    <div class="test-box">
+        <h2>Test Configuration</h2>
+        <label>MCP Server URL:</label>
+        <input type="text" id="serverUrl" value="http://localhost:3001/mcp" style="width: 100%; padding: 8px; margin: 10px 0;">
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function testConnection() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing connection...</p>';
+
+            try {
+                // Test 1: Health check
+                resultsDiv.innerHTML += '<h3>Test 1: Health Check</h3>';
+                const healthUrl = serverUrl.replace('/mcp', '/health');
+                const healthResponse = await fetch(healthUrl);
+                const healthData = await healthResponse.json();
+                resultsDiv.innerHTML += `<div class="result success">
+                    <strong>✓ Health check passed</strong>
+                    <pre>${JSON.stringify(healthData, null, 2)}</pre>
+                </div>`;
+
+                // Test 2: Server info
+                resultsDiv.innerHTML += '<h3>Test 2: Server Info</h3>';
+                const infoUrl = serverUrl.replace('/mcp', '/');
+                const infoResponse = await fetch(infoUrl);
+                const infoData = await infoResponse.json();
+                resultsDiv.innerHTML += `<div class="result success">
+                    <strong>✓ Server info retrieved</strong>
+                    <pre>${JSON.stringify(infoData, null, 2)}</pre>
+                </div>`;
+
+                // Test 3: MCP Initialize
+                resultsDiv.innerHTML += '<h3>Test 3: MCP Initialize</h3>';
+                const initRequest = {
+                    jsonrpc: '2.0',
+                    method: 'initialize',
+                    params: {
+                        protocolVersion: '2024-11-05',
+                        capabilities: {},
+                        clientInfo: {
+                            name: 'web-test-client',
+                            version: '1.0.0'
+                        }
+                    },
+                    id: 1
+                };
+
+                const mcpResponse = await fetch(serverUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, text/event-stream'
+                    },
+                    body: JSON.stringify(initRequest)
+                });
+
+                const mcpText = await mcpResponse.text();
+                resultsDiv.innerHTML += `<div class="result success">
+                    <strong>✓ MCP initialization successful</strong>
+                    <pre>${mcpText}</pre>
+                </div>`;
+
+                resultsDiv.innerHTML += '<div class="result success"><h2>✓ All tests passed! Server is reachable.</h2></div>';
+
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="result error">
+                    <strong>✗ Connection failed</strong>
+                    <pre>${error.message}\n\n${error.stack}</pre>
+                    <p><strong>Common issues:</strong></p>
+                    <ul>
+                        <li>CORS error: Server might not allow connections from this origin</li>
+                        <li>Network error: Server might be down or unreachable</li>
+                        <li>Firewall: Port 3001 might be blocked</li>
+                        <li>Wrong URL: Check the server URL is correct</li>
+                    </ul>
+                </div>`;
+            }
+        }
+
+        // Auto-detect server URL from current location
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            document.getElementById('serverUrl').value =
+                `${window.location.protocol}//${window.location.hostname}:3001/mcp`;
+        }
+    </script>
+</body>
+</html>

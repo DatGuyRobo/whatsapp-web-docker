@@ -769,39 +769,6 @@ app.post('/api/create-poll', authenticate, validate(schemas.createPoll), async (
     }
 });
 
-// Get poll votes (NEW FEATURE)
-app.get('/api/poll-votes/:messageId', authenticate, async (req, res) => {
-    if (!isReady) {
-        return res.status(503).json({ error: 'Client not ready' });
-    }
-
-    try {
-        const message = await client.getMessageById(req.params.messageId);
-        if (!message) {
-            return res.status(404).json({ error: 'Message not found' });
-        }
-
-        if (message.type !== 'poll_creation') {
-            return res.status(400).json({ error: 'Message is not a poll' });
-        }
-
-        const poll = await message.getPoll();
-        const votes = await poll.getVotes();
-
-        res.json({
-            poll: {
-                name: poll.name,
-                options: poll.options,
-                allowMultipleAnswers: poll.allowMultipleAnswers,
-            },
-            votes,
-        });
-    } catch (error) {
-        logger.error('Error getting poll votes:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Set typing indicator (NEW FEATURE)
 app.post('/api/set-typing', authenticate, validate(schemas.setTyping), async (req, res) => {
     if (!isReady) {

@@ -26,6 +26,9 @@ services:
     security_opt:
       - seccomp=unconfined
     shm_size: '2gb'
+    mem_limit: 2g
+    mem_reservation: 1g
+    cpus: '2.0'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -45,6 +48,8 @@ services:
       - mongodb_data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=whatsapp-api
+    mem_limit: 1g
+    mem_reservation: 512m
     networks:
       - whatsapp-network
 
@@ -56,7 +61,35 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    mem_limit: 512m
+    mem_reservation: 256m
+    networks:
+      - whatsapp-network
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: whatsapp-mcp-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - WHATSAPP_API_URL=http://whatsapp-api:3000
+      - WHATSAPP_API_KEY=${API_KEY}
+      - PORT=3001
+    env_file:
+      - ./mcp-server/.env
+    depends_on:
+      - whatsapp-api
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     networks:
       - whatsapp-network
 
